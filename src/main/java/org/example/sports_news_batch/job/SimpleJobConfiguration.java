@@ -63,7 +63,7 @@ public class SimpleJobConfiguration {
     @Bean("deleteTasklet")
     public Tasklet deleteTasklet() {
         return ((contribution, chunkContext) -> {
-            log.info("오늘 뉴스 삭제 시작");
+            log.info("오늘 뉴스 삭제 시작.");
             newsService.deleteNews();
             log.info("오늘 뉴스 삭제 완료");
             return RepeatStatus.FINISHED;
