@@ -40,6 +40,9 @@ public class SimpleJobConfiguration {
     @Autowired
     private NewsService newsService;
 
+    @Autowired
+    private JobCompletionNotificationListener listener;
+
     @Bean
     public Job myJob(JobRepository jobRepository, Step delStep, Step saveStep) {
         return new JobBuilder("myJob", jobRepository)
@@ -47,6 +50,7 @@ public class SimpleJobConfiguration {
                 .incrementer(new RunIdIncrementer())
                 .next(saveStep)
                 .incrementer(new RunIdIncrementer())
+                .listener(listener)
                 .build();
     }
 
