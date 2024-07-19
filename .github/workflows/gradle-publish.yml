@@ -1,0 +1,58 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+# This workflow will build a package using Gradle and then publish it to GitHub packages when a release is created
+# For more information see: https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#Publishing-using-gradle
+
+name: excute batch
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Decode and Unzip OCI Wallet
+      run: |
+        echo "${{ secrets.OCI_WALLET }}" | base64 --decode > oci-wallet.zip
+        unzip oci-wallet.zip -d ./src/main/resources/Wallet_DOVB # 클라우드 지갑 decode 하여 unzip
+
+    - name: Setup application.properties with secrets
+      run: |
+        cd ./src/main/resources
+        echo "spring.datasource.driver-class-name=oracle.jdbc.OracleDriver" > application.properties
+        echo "spring.datasource.url=jdbc:oracle:thin:@dovb_high?TNS_ADMIN=./src/main/resources/Wallet_DOVB" >> application.properties
+        echo "spring.datasource.username=${DB_USER}" >> application.properties
+        echo "spring.datasource.password=${DB_PASSWORD}" >> application.properties
+        echo "spring.jpa.database=oracle" >> application.properties
+        echo "spring.jpa.hibernate.ddl-auto=none" >> application.properties
+        echo "spring.batch.jdbc.initialize-schema=always" >> application.properties
+        echo "spring.batch.jdbc.isolation-level-for-create=read_committed" >> application.properties
+      env:
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
+
+    - name: Make gradlew executable
+      run: chmod +x ./gradlew # gradlew 권한 부여
+
+    - name: Build with Gradle Wrapper
+      run: ./gradlew bootJar # bootJar 파일 생성
+    
+    - name: Run batch
+      run: java -jar ./build/libs/sports_news_batch-0.0.1-SNAPSHOT.jar
