@@ -9,7 +9,7 @@ name: excute batch
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "master" ]
 
 jobs:
   build:
@@ -28,7 +28,7 @@ jobs:
     - name: Decode and Unzip OCI Wallet
       run: |
         echo "${{ secrets.OCI_WALLET }}" | base64 --decode > oci-wallet.zip
-        unzip oci-wallet.zip -d ./src/main/resources/Wallet_DOVB # 클라우드 지갑 decode 하여 unzip
+        unzip oci-wallet.zip -d ./src/main/resources/Wallet_DOVB # 클라우드 지갑 decode 후 unzip
 
     - name: Setup application.properties with secrets
       run: |
