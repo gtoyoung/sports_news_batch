@@ -58,3 +58,8 @@ jobs:
     
     - name: Run batch
       run: java -jar ./build/libs/sports_news_batch-0.0.1-SNAPSHOT.jar
+
+    - name: Call Clear Cache
+      run: |
+        curl -X GET "https://api.dovb.kro.kr/clearCache"
+  
